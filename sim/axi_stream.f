@@ -6,12 +6,12 @@
 +incdir+../tb
 +incdir+../tb/common
 +incdir+../tb/agent_master
-+incdir+../tb/agent_master/seq
 +incdir+../tb/agent_slave
-+incdir+../tb/agent_slave/seq
 +incdir+../tb/env
-+incdir+../tb/env/vseq
 +incdir+../tb/test
++incdir+../tb/test/seq_m
++incdir+../tb/test/seq_l
++incdir+../tb/test/vseq
 +incdir+../tb/test/tests
 
 // Interface (compilation unit scope, used by all packages + top).
