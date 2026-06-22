@@ -1,192 +1,247 @@
-# =============================================================================
-# Makefile — AXI-Stream VIP-to-VIP UVM testbench (QuestaSim / ModelSim)
+# -s means silent mode
+# The command executed along with the output will be displayed on the terminal
+# To get only the ouput use 'silent' mode
 #
-# Quick start:
-#   make                      # show this help
-#   make run                  # compile + run default test (batch)
-#   make run TEST=axis_packet_test SEED=7
-#   make gui  TEST=axis_smoke_test            # interactive, waves logged
-#   make regress              # run every test with coverage, then merge+report
-#   make cov_report           # text + HTML coverage report from merged UCDB
-#   make clean                # remove generated files
+# make target -s
+
+
+# -n or --just-print
+# The first test I perform on a new makefile target is to invoke make with the --just-print (-n) option.
+# This causes make to read the makefile and print every command it would normally execute to
+# update the target but without executing them.
 #
-# Common overridable variables (make VAR=value):
-#   TEST       UVM test name           (default: axis_smoke_test)
-#   SEED       random seed             (default: random; use a number to repro)
-#   VERB       UVM verbosity           (default: UVM_MEDIUM)
-#   COV        coverage on/off         (default: 0; regress forces 1)
-#   WAVES      log waves for GUI/debug (default: 1 in gui/debug)
-#   PLUSARGS   extra +plusargs passed verbatim to vsim
-#   VOPT_ACC   visibility for debug    (default: +acc in gui/debug)
-# =============================================================================
+# make target -n
 
-# ---- Project knobs ----------------------------------------------------------
-TOP        := tb_top
-WORK       := work
-FLIST      := axi_stream.f
-UVM_LIB    := mtiUvm
-TIMESCALE  := 1ns/1ps
 
-# All tests known to the regression. Add new tests here.
-TESTS      := axis_smoke_test axis_packet_test axis_continuous_test
+# When you run make with the -i or --ignore-errors flag,
+# errors are ignored in all recipes of all rules.
+# A rule in the makefile for the special target .IGNORE has the same effect,
+# if there are no prerequisites. This is less flexible but sometimes useful.
+# When errors are to be ignored, because of -i flag, make treats an error return just like success,
+# except that it prints out a message that tells you the status code the shell exited with,
+# and says that the error has been ignored.
+#
+# make target -i
 
-# ---- User-overridable defaults ----------------------------------------------
-TEST       ?= axis_smoke_test
-SEED       ?= random
-VERB       ?= UVM_MEDIUM
-COV        ?= 0
-WAVES      ?= 0
-PLUSARGS   ?=
+# // TODO(mshariff):
+# Add .git rules to ignore log files, basically the sim folder except makefile and scripts
 
-# ---- Tools ------------------------------------------------------------------
-VLIB       := vlib
-VMAP       := vmap
-VLOG       := vlog 
-VSIM       := vsim
-VCOVER     := vcover
 
-# ---- Derived paths ----------------------------------------------------------
-LOG_DIR    := logs
-COV_DIR    := cov
-COV_HTML   := $(COV_DIR)/html
-MERGED     := $(COV_DIR)/merged.ucdb
-UCDB       := $(COV_DIR)/$(TEST).ucdb
-COMP_LOG   := $(LOG_DIR)/comp.log
-SIM_LOG    := $(LOG_DIR)/sim_$(TEST).log
-# Stamp encodes the coverage mode so toggling COV recompiles, but repeated
-# runs in the same mode (e.g. the regression loop) compile only once.
-COMP_DONE  := $(WORK)/.compiled.cov$(COV)
+.IGNORE:
+	compile
+	simulate
 
-# ---- Compile flags ----------------------------------------------------------
+# WE can also use the target where we WANT the silent mode
+.SILENT:
+	compile
+	simulate
+	usage
+
+# First target will be executed incase the user doesn't mention
+# the target to execute
+# In this case, usage will be executed
+# Usage
+usage:
+	echo "";
+	echo "-----------------------------------------------------------------";
+	echo "------------------------- Usage ---------------------------------";
+	echo "";
+	echo "make target <options> <variable>=<value>";
+	echo "";
+	echo "To compile use:"
+	echo "make compile";
+	echo "";
+	echo "To simulate individual test:"
+	echo "make simulate test=<test_name> uvm_verbosity=<VERBOSITY_LEVEL>";
+	echo "";
+	echo "Example:":
+	echo "make simulate test=axis_smoke_test uvm_verbosity=UVM_HIGH";
+	echo "";
+	echo "To run regression:"
+	echo "make regression testlist_name=<regression_testlist_name.list>";
+	echo "";
+	echo "Example:":
+	echo "make regression testlist_name=axis_regression.list";
+	echo "";
+	echo "-----------------------------------------------------------------";
+	echo "-----------------------------------------------------------------";
+	echo "";
+
 UVM_HOME  = /cadtools/mentor/Questa_10.6b/questasim/verilog_src/uvm-1.1c
-VLOG_FLAGS     = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
-ifeq ($(COV),1)
-  VLOG_FLAGS += +cover=bcefst
+UVM_FLAGS     = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
+
+all:
+	make clean; make compile; make simulate;
+
+# For Assertions use +acc options
+#  +cover=becstf
+compile:
+	make clean_compile;
+	#make clean_simulate;
+	vlib work;
+	vlog -sv \
+	-L mtiUvm \
+	+acc \
+	+cover \
+	+fcover \
+	$(UVM_FLAGS) \
+	-l axi_stream_compile.log \
+	-f axi_stream.f
+
+	# -s means silent mode
+	#  The command executed along with the output will be displayed on the terminal
+	#  To get only the ouput use 'silent' mode
+	# make compile_war_err -s
+	# or use .SILENT
+	make compile_war_err
+
+# Setting a default test as axis_smoke_test
+ifndef test
+override test = axis_smoke_test
 endif
 
-# ---- Coverage flags ---------------------------------------------------------
-ifeq ($(COV),1)
-  VSIM_COV   := -coverage
-  COV_SAVE   := coverage save -onexit $(UCDB);
-else
-  VSIM_COV   :=
-  COV_SAVE   :=
+# Setting the default uvm_verbosity to UVM_MEDIUM
+ifndef uvm_verbosity
+override uvm_verbosity = UVM_MEDIUM
 endif
 
-# ---- Waveform / visibility --------------------------------------------------
-VOPT_ACC   ?= +acc
-ifeq ($(WAVES),1)
-  WAVE_CMDS  := log -r /*;
-else
-  WAVE_CMDS  :=
+
+
+## For randomized seed
+# TODO(mshariff):
+#Add this line after -sva
+#-sv_seed random
+
+# Setting the default test folder to test name
+ifndef test_folder
+override test_folder = $(test)
 endif
 
-# ---- Common vsim arguments --------------------------------------------------
-VSIM_ARGS  := $(VSIM_COV) $(WORK).$(TOP) \
-              -sv_seed $(SEED) \
-              +UVM_TESTNAME=$(TEST) \
-			  -sv_lib /cadtools/mentor/Questa_10.6b/questasim/uvm-1.1c/linux/uvm_dpi \
-              +UVM_VERBOSITY=$(VERB) \
-              $(PLUSARGS)
+simulate:
+	# rm -r $(test_folder)
+	mkdir $(test_folder)
 
-# =============================================================================
-# Targets
-# =============================================================================
-.PHONY: help comp run gui debug regress cov_merge cov_report \
-        $(TESTS) dirs clean cleanall
+	# Use -novopt for no optimization - Makes the simulation slower
+	# vsim -pli finesim.so -coverage top
+	vsim -vopt \
+	-sv_lib /cadtools/mentor/Questa_10.6b/questasim/uvm-1.1c/linux/uvm_dpi \
+	work.tb_top \
+	-voptargs=+acc=npr \
+	-assertdebug \
+	+UVM_OBJECTION_TRACE \
+	+UVM_TESTNAME=$(test) \
+	+UVM_VERBOSITY=$(uvm_verbosity) \
+	-l $(test_folder)/$(test).log \
+	-sva \
+  	-coverage \
+	-c -solvefaildebug -do "log -r /*; add wave -r /*; coverage save -onexit -assert -directive -cvg -codeAll $(test_folder)/$(test)_coverage.ucdb; run -all; exit" \
+	-wlf $(test_folder)/waveform.wlf
 
-help:
-	@echo "AXI-Stream UVM testbench — QuestaSim Makefile"
-	@echo ""
-	@echo "Targets:"
-	@echo "  comp                 compile the testbench (vlib + vlog)"
-	@echo "  run                  compile + run TEST in batch (-c)"
-	@echo "  gui                  compile + run TEST in the GUI (waves logged)"
-	@echo "  debug                gui + full signal visibility (+acc)"
-	@echo "  regress              run all tests with coverage, then merge+report"
-	@echo "  cov_merge            merge all $(COV_DIR)/*.ucdb into $(MERGED)"
-	@echo "  cov_report           text + HTML coverage report"
-	@echo "  <test_name>          run a single named test (e.g. make axis_packet_test)"
-	@echo "  clean                remove logs, coverage, transcripts"
-	@echo "  cleanall             clean + remove the compiled work library"
-	@echo ""
-	@echo "Tests: $(TESTS)"
-	@echo ""
-	@echo "Examples:"
-	@echo "  make run TEST=axis_packet_test SEED=7 VERB=UVM_HIGH"
-	@echo "  make gui TEST=axis_smoke_test"
-	@echo "  make regress COV=1"
 
-# ---- Directories ------------------------------------------------------------
-dirs:
-	@mkdir -p $(LOG_DIR) $(COV_DIR)
+	# For checking and reporting simulation errors
+	make simulate_war_err
+	# make merge_cov_report
 
-# ---- Compile ----------------------------------------------------------------
-comp: $(COMP_DONE)
+	## TODO(mshariff):
+	## # For coverage report in text format
+	## #vcover report -text $(test)/$(test)_cov
+	# -c -do "log -r /*; add wave -r /*; coverage save -onexit -assert -directive -cvg -codeAll $(test)/coverage.ucdb; coverage report -file $(teset)/coverage.txt -byfile -detail -noannotate -option -directive -cvg -details -verbose; run -all; exit" \
+	# vcover report -file  -byfile -detail -noannotate -option -cvg
 
-$(COMP_DONE): | dirs
-	@echo ">> Compiling ($(FLIST), cov=$(COV))"
-	@test -d $(WORK) || $(VLIB) $(WORK)
-	$(VLOG)  $(VLOG_FLAGS) -f $(FLIST) -l $(COMP_LOG)
-	@rm -f $(WORK)/.compiled.cov*
-	@touch $(COMP_DONE)
+	# For coverage report in HTML format
+	# vcover report -html $(test_folder)/$(test)_coverage.ucdb -htmldir $(test_folder)/html_cov_report -details
 
-# ---- Batch run --------------------------------------------------------------
-run: comp
-	@echo ">> Running $(TEST) (seed=$(SEED), cov=$(COV)) in batch"
-	$(VSIM) -c $(VSIM_ARGS) \
-	    -do "$(COV_SAVE) run -all; quit -f" \
-	    -l $(SIM_LOG)
+	# To open the html coverage report
+	# firefox test_folder/html_cov_report/index.html &
 
-# ---- GUI run ----------------------------------------------------------------
-gui: comp
-	@echo ">> Launching $(TEST) in the GUI"
-	$(VSIM) -gui $(VSIM_ARGS) \
-	    -do "$(WAVE_CMDS) run -all"
+	# To open the waveform use the below command
+	# vsim -view waveform.wlf &
+	#
+	# To open the wavefrom with saved signals
+	# vsim -view waveform.wlf -do axis_waves.do &
 
-# ---- Debug (GUI + full visibility) ------------------------------------------
-# +acc visibility is an elaboration (vopt) option, applied at vsim time.
-debug: comp
-	@echo ">> Launching $(TEST) in the GUI with full visibility"
-	$(VSIM) -gui -voptargs="$(VOPT_ACC)" $(VSIM_ARGS) \
-	    -do "log -r /*; add wave -r /*; run -all"
+clean_simulate:
+	rm -rf *_test*
 
-# ---- Per-test convenience targets -------------------------------------------
-# `make axis_packet_test` == `make run TEST=axis_packet_test`
-$(TESTS):
-	@$(MAKE) --no-print-directory run TEST=$@ COV=$(COV) SEED=$(SEED) VERB=$(VERB)
+clean_compile:
+	rm -rf work/ *_compile.log transcript waveform.wlf
+	rm -rf merged_coverage.ucdb merged_cov_html_report
 
-# ---- Regression: every test, coverage on, then merge + report ---------------
-regress: | dirs
-	@echo ">> Regression over: $(TESTS)"
-	@rm -f $(COV_DIR)/*.ucdb
-	@set -e; for t in $(TESTS); do \
-	    echo "==== $$t ===="; \
-	    $(MAKE) --no-print-directory run TEST=$$t COV=1 SEED=$(SEED) VERB=$(VERB); \
-	done
-	@$(MAKE) --no-print-directory cov_merge
-	@$(MAKE) --no-print-directory cov_report
+#clean:
+#	make clean_compile
+#	make clean_simulate
 
-# ---- Coverage merge ---------------------------------------------------------
-cov_merge:
-	@echo ">> Merging coverage databases into $(MERGED)"
-	$(VCOVER) merge -out $(MERGED) $(COV_DIR)/*.ucdb
+##
+## For Regression and coverage merge
+##
+regression:
+	# Run compilation
+	#make compile
+	#make clean_simulate
+	# Run simualtion - regression
+	make clean_simulate
+	python regression_handling.py $(testlist_name)
+	#	# Get the tests from regression list
+	#	grep "_test" ../../src/hvl_top/testlists/axis_regression.list | grep -v "\#" > reg_list
+	#	make simulate test=value #Get the name from regression list
+	#	Merge coverage
+	make merge_cov_report
 
-# ---- Coverage report (text summary + HTML) ----------------------------------
-cov_report:
-	@echo ">> Coverage summary"
-	$(VCOVER) report $(MERGED)
-	@echo ">> Writing HTML report to $(COV_HTML)"
-	$(VCOVER) report -details -html -htmldir $(COV_HTML) $(MERGED)
-	@echo ">> Open $(COV_HTML)/index.html"
+# For merge to happen, the coverage names for each test must be different
+#
+merge_cov_report:
+	rm -rf merged_coverage.ucdb merged_cov_html_report
+	# Merging all the coverage
+	vcover merge merged_coverage.ucdb -64 */*.ucdb
+	#vcover merge mem_cover mem_cov1 mem_cov2 mem_cov3 mem_cov4 mem_cov5 mem_cov6 mem_cov7 mem_cov8
+	vcover report -html merged_coverage.ucdb -htmldir ./merged_cov_html_report -details
 
-# ---- Cleanup ----------------------------------------------------------------
-clean:
-	@echo ">> Removing generated outputs"
-	-rm -rf $(LOG_DIR) $(COV_DIR)
-	-rm -f transcript vsim.wlf vsim_stacktrace.vstf *.vcd *.log
-	-rm -f $(COMP_DONE)
+	echo "";
+	echo "-----------------------------------------------------------------";
+	echo "Coverage report: firefox merged_cov_html_report/index.html &"
+	echo "-----------------------------------------------------------------";
+	echo "";
 
-cleanall: clean
-	@echo ">> Removing work library"
-	-rm -rf $(WORK)
+compile_war_err:
+	echo "";
+	echo "-----------------------------------------------------------------";
+	echo "------------------- Compilation Report --------------------------";
+	echo "";
+	grep "^** " axi_stream_compile.log;
+	echo "";
+	grep "^Error" axi_stream_compile.log;
+	echo "";
+	echo "Log file path: axi_stream_compile.log"
+	echo "";
+	echo "-----------------------------------------------------------------";
+	echo "-----------------------------------------------------------------";
+	echo "";
+
+simulate_war_err:
+	echo "";
+	echo "-----------------------------------------------------------------";
+	echo "-------------------- Simulation Report --------------------------";
+	echo "";
+	echo "Simulator Errors";
+	grep "Error" $(test_folder)/$(test).log;
+	echo "";
+	echo "UVM Fatal";
+	grep "UVM_FATAL" $(test_folder)/$(test).log;
+	echo "";
+	echo "UVM Errors";
+	grep "UVM_ERROR" $(test_folder)/$(test).log;
+	echo "";
+	echo "UVM Warnings";
+	grep "UVM_WARNING" $(test_folder)/$(test).log;
+	echo "";
+	echo "Testname: $(test)"
+	echo "";
+	echo "Log file path: $(test_folder)/$(test).log"
+	echo "";
+	echo "Waveform: vsim -view $(test_folder)/waveform.wlf &"
+	echo "";
+	echo "Coverage report: firefox $(test_folder)/html_cov_report/index.html &"
+	echo "";
+	echo "-----------------------------------------------------------------";
+	echo "-----------------------------------------------------------------";
+	echo "";
