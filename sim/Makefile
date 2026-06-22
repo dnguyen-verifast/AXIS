@@ -85,7 +85,7 @@ endif
 VSIM_ARGS  := $(VSIM_COV) $(WORK).$(TOP) \
               -sv_seed $(SEED) \
               +UVM_TESTNAME=$(TEST) \
-			  -sv_lib /cadtools/mentor/Questa_10.6b/questasim/uvm-1.1c/linux_x86_64/uvm_dpi \
+			  -sv_lib /cadtools/mentor/Questa_10.6b/questasim/uvm-1.1c/linux/uvm_dpi \
               +UVM_VERBOSITY=$(VERB) \
               $(PLUSARGS)
 
