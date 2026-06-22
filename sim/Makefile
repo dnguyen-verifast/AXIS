@@ -41,7 +41,7 @@ PLUSARGS   ?=
 # ---- Tools ------------------------------------------------------------------
 VLIB       := vlib
 VMAP       := vmap
-VLOG       := vlog
+VLOG       := vlog 
 VSIM       := vsim
 VCOVER     := vcover
 
@@ -58,7 +58,8 @@ SIM_LOG    := $(LOG_DIR)/sim_$(TEST).log
 COMP_DONE  := $(WORK)/.compiled.cov$(COV)
 
 # ---- Compile flags ----------------------------------------------------------
-VLOG_FLAGS := -sv -timescale $(TIMESCALE) -L $(UVM_LIB) +incdir+../tb
+UVM_HOME  = /cadtools/mentor/Questa_10.6b/questasim/verilog_src/uvm-1.1c
+VLOG_FLAGS     = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 ifeq ($(COV),1)
   VLOG_FLAGS += +cover=bcefst
 endif
@@ -126,7 +127,7 @@ comp: $(COMP_DONE)
 $(COMP_DONE): | dirs
 	@echo ">> Compiling ($(FLIST), cov=$(COV))"
 	@test -d $(WORK) || $(VLIB) $(WORK)
-	$(VLOG) $(VLOG_FLAGS) -f $(FLIST) -l $(COMP_LOG)
+	$(VLOG)  $(VLOG_FLAGS) -f $(FLIST) -l $(COMP_LOG)
 	@rm -f $(WORK)/.compiled.cov*
 	@touch $(COMP_DONE)
 

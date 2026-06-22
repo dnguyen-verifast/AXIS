@@ -8,9 +8,8 @@
 package axis_common_pkg;
     import uvm_pkg::*;
     `include "uvm_macros.svh"
-
+    
     `include "axis_seq_item.sv"
-
 endpackage : axis_common_pkg
 
 `endif // AXIS_COMMON_PKG_SV
