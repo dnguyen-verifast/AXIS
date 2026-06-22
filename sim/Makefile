@@ -86,7 +86,6 @@ VSIM_ARGS  := $(VSIM_COV) $(WORK).$(TOP) \
               -sv_seed $(SEED) \
               +UVM_TESTNAME=$(TEST) \
               +UVM_VERBOSITY=$(VERB) \
-              -L $(UVM_LIB) \
               $(PLUSARGS)
 
 # =============================================================================
