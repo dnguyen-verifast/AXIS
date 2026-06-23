@@ -33,7 +33,7 @@ class axis_master_sparse_seq extends axis_master_base_seq;
                 foreach (keep[j]) {
                     keep[j] == 1'b1;
                 }
-                (strb.sum() with (int'(item))) >= 1; 
+                (strb.sum() with (int'(item))) <= num_bytes; 
             })
                 `uvm_fatal(get_type_name(), "randomize failed")
             finish_item(req);

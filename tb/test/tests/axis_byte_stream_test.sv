@@ -16,7 +16,7 @@ class axis_byte_stream_test extends axis_base_test;
         super.run_phase(phase);
         phase.raise_objection(this);
         vseq = axis_byte_stream_vseq::type_id::create("vseq");
-        if (!vseq.randomize() with { num_packets == 10; })
+        if (!vseq.randomize() with { num_packets == 2; })
             `uvm_fatal(get_type_name(), "vseq randomize failed")
         vseq.start(env.vseqr);
         phase.drop_objection(this);

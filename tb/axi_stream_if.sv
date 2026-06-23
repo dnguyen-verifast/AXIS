@@ -87,7 +87,7 @@ interface axi_stream_if #(
     // pragma translate_on
     property p_twakeup_valid;
         @(posedge ACLK) disable iff(!ARESETn)
-            (TVALID && TWAKEUP && !TREADY) |=> $rose(TWAKEUP);
+            (TVALID && TWAKEUP && !TREADY) |=> $stable(TWAKEUP);
     endproperty
     a_twakeup_valid : assert property (p_twakeup_valid);
 
