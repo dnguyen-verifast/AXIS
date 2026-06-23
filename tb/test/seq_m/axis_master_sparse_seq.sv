@@ -29,14 +29,11 @@ class axis_master_sparse_seq extends axis_master_base_seq;
                 id   == pid;
                 dest == 0;
                 last == (i == (len - 1));
-                foreach (strb[j]) {
-                    keep[j] == 1'b1;
-                    this.sparse_byte == $urandom_range(0,1);
-                    if(sparse_byte == 1) strb[j] == 1'b0;
-                        else strb[j] == 1'b1;
-                }
-                (keep.sum() with (int'(item))) >= 1;           // >=1 real data byte
                 valid_delay == 0;
+                foreach (keep[j]) {
+                    keep[j] == 1'b1;
+                }
+                (strb.sum() with (int'(item))) >= 1; 
             })
                 `uvm_fatal(get_type_name(), "randomize failed")
             finish_item(req);
