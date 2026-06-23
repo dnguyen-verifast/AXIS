@@ -12,7 +12,7 @@ class axis_master_aligned_seq extends axis_master_base_seq;
     `uvm_object_utils(axis_master_aligned_seq)
 
     rand int unsigned len;     // number of beats/transfers
-    constraint c_len { len inside {[2:6]}; }
+    constraint c_len { len inside {[128:255]}; }
 
     function new(string name = "axis_master_aligned_seq");
         super.new(name);

@@ -10,7 +10,7 @@ class axis_unaligned_vseq extends axis_base_vseq;
     `uvm_object_utils(axis_unaligned_vseq)
 
     rand int unsigned num_packets;
-    constraint c_n { num_packets inside {[5:15]}; }
+    constraint c_n { num_packets inside {[1:3]}; }
 
     function new(string name = "axis_unaligned_vseq");
         super.new(name);

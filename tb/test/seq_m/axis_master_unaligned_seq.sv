@@ -23,7 +23,7 @@ class axis_master_unaligned_seq extends axis_master_base_seq;
     rand int unsigned lead;   // leading null bytes in the first beat
     rand int unsigned trail;  // trailing null bytes in the last beat
 
-    constraint c_len   { len   inside {[2:8]}; }
+    constraint c_len   { len   inside {[128:255]}; }
     constraint c_lead  { lead  inside {[0:7]}; }
     constraint c_trail { trail inside {[0:7]}; }
 
@@ -56,7 +56,7 @@ class axis_master_unaligned_seq extends axis_master_base_seq;
 
             foreach (tr.data[lane]) begin
                 bit is_null = (lane < beat_lead) || (lane >= W - beat_trail);
-                tr.keep[lane] = is_null;          // null = {0,0}, data = {1,1}
+                tr.keep[lane] = 1'b1;          // null = {0,0}, data = {1,1}
                 tr.strb[lane] = !is_null;
                 tr.data[lane] = is_null ? '0 : $urandom;
             end

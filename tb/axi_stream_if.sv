@@ -85,6 +85,11 @@ interface axi_stream_if #(
     a_reset_tvalid_low: assert property (p_reset_tvalid_low)
         else $error("AXIS: TVALID must be LOW during reset");
     // pragma translate_on
+    property p_twakeup_valid;
+        @(posedge ACLK) disable iff(!ARESETn)
+            (TVALID && TWAKEUP && !TREADY) |=> $rose(TWAKEUP);
+    endproperty
+    a_twakeup_valid : assert property (p_twakeup_valid)
 
 endinterface : axi_stream_if
 

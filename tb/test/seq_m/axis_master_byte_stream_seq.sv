@@ -29,7 +29,7 @@ class axis_master_byte_stream_seq extends axis_master_base_seq;
                 id   == pid;
                 dest == 0;
                 last == (i == (len - 1));
-                foreach (keep[j]) keep[j] == 1;   // no null bytes in a byte stream
+                foreach (data[j]) keep[j] == strb[j];   // no null bytes in a byte stream
                 // strb left free: data {1,1} or position {1,0}
             })
                 `uvm_fatal(get_type_name(), "randomize failed")
