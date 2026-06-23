@@ -89,7 +89,7 @@ interface axi_stream_if #(
         @(posedge ACLK) disable iff(!ARESETn)
             (TVALID && TWAKEUP && !TREADY) |=> $rose(TWAKEUP);
     endproperty
-    a_twakeup_valid : assert property (p_twakeup_valid)
+    a_twakeup_valid : assert property (p_twakeup_valid);
 
 endinterface : axi_stream_if
 
