@@ -18,6 +18,9 @@ package axis_test_pkg;
     `include "axis_packet_test.sv"
     `include "axis_continuous_test.sv"
     `include "axis_unaligned_test.sv"
+    `include "axis_byte_stream_test.sv"
+    `include "axis_aligned_test.sv"
+    `include "axis_sparse_test.sv"
 endpackage : axis_test_pkg
 
 `endif // AXIS_TEST_PKG_SV

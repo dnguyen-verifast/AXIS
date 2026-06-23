@@ -56,7 +56,7 @@ class axis_master_unaligned_seq extends axis_master_base_seq;
 
             foreach (tr.data[lane]) begin
                 bit is_null = (lane < beat_lead) || (lane >= W - beat_trail);
-                tr.keep[lane] = !is_null;          // null = {0,0}, data = {1,1}
+                tr.keep[lane] = is_null;          // null = {0,0}, data = {1,1}
                 tr.strb[lane] = !is_null;
                 tr.data[lane] = is_null ? '0 : $urandom;
             end

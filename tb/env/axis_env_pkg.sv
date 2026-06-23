@@ -22,6 +22,9 @@ package axis_env_pkg;
     `include "axis_packet_vseq.sv"
     `include "axis_continuous_vseq.sv"
     `include "axis_unaligned_vseq.sv"
+    `include "axis_byte_stream_vseq.sv"
+    `include "axis_aligned_vseq.sv"
+    `include "axis_sparse_vseq.sv"
 
 endpackage : axis_env_pkg
 
