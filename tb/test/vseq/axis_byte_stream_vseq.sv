@@ -27,7 +27,7 @@ class axis_byte_stream_vseq extends axis_base_vseq;
                 `uvm_fatal(get_type_name(), "byte_stream randomize failed")
             s.start(p_sequencer.mst_sqr);
         end
-        disable RESP;
+        //disable RESP;
     endtask
 endclass
 
