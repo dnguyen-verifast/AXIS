@@ -18,6 +18,7 @@
 ../tb/axi_stream_if.sv
 
 // Packages.
+../tb/common/axis_cfg_pkg.sv
 ../tb/common/axis_common_pkg.sv
 ../tb/agent_master/axis_master_pkg.sv
 ../tb/agent_slave/axis_slave_pkg.sv

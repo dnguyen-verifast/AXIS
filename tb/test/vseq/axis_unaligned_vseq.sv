@@ -1,0 +1,35 @@
+//==============================================================================
+// axis_unaligned_vseq.sv
+// Unaligned: continuous unaligned-stream packets (leading/trailing null bytes)
+// against random backpressure.
+//==============================================================================
+`ifndef AXIS_UNALIGNED_VSEQ_SV
+`define AXIS_UNALIGNED_VSEQ_SV
+
+class axis_unaligned_vseq extends axis_base_vseq;
+    `uvm_object_utils(axis_unaligned_vseq)
+
+    rand int unsigned num_packets;
+    constraint c_n { num_packets inside {[5:15]}; }
+
+    function new(string name = "axis_unaligned_vseq");
+        super.new(name);
+    endfunction
+
+    task body();
+        axis_slave_random_ready_seq rdy = axis_slave_random_ready_seq::type_id::create("rdy");
+        fork
+            begin : RESP rdy.start(p_sequencer.slv_sqr); end
+        join_none
+        for (int i = 0; i < num_packets; i++) begin
+            axis_master_unaligned_seq u =
+                axis_master_unaligned_seq::type_id::create($sformatf("unaligned_%0d", i));
+            if (!u.randomize())
+                `uvm_fatal(get_type_name(), "unaligned randomize failed")
+            u.start(p_sequencer.mst_sqr);
+        end
+        disable RESP;
+    endtask
+endclass
+
+`endif // AXIS_UNALIGNED_VSEQ_SV

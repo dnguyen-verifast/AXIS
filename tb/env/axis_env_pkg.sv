@@ -21,6 +21,7 @@ package axis_env_pkg;
     `include "axis_smoke_vseq.sv"
     `include "axis_packet_vseq.sv"
     `include "axis_continuous_vseq.sv"
+    `include "axis_unaligned_vseq.sv"
 
 endpackage : axis_env_pkg
 

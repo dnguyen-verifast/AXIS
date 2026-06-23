@@ -17,6 +17,7 @@ package axis_test_pkg;
     `include "axis_smoke_test.sv"
     `include "axis_packet_test.sv"
     `include "axis_continuous_test.sv"
+    `include "axis_unaligned_test.sv"
 endpackage : axis_test_pkg
 
 `endif // AXIS_TEST_PKG_SV

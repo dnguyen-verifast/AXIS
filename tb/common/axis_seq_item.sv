@@ -19,7 +19,7 @@ class axis_seq_item extends uvm_sequence_item;
 
     // Master-side timing: idle cycles before asserting TVALID for this transfer.
     rand int unsigned valid_delay;
-
+    rand axis_stream_type_e axis_stream_type;
     // Number of byte lanes — set by the sequence/config before randomize().
     int unsigned num_bytes = 4;
 
@@ -48,10 +48,20 @@ class axis_seq_item extends uvm_sequence_item;
     constraint c_delays { valid_delay inside {[0:5]}; }
     constraint c_ids    { id inside {[0:255]}; dest inside {[0:255]}; }
 
+    constraint axis_stream_type_c1 { axis_stream_type == OPTIONAL_STREAM_TYPE;}
     function new(string name = "axis_seq_item");
         super.new(name);
     endfunction
-
+//    extern virtual function void post_randomize();
 endclass : axis_seq_item
+// function void axis_seq_item::post_randomize();
+//     bit keep_local[num_bytes];
+//     bit strb_local[num_bytes];
+//     case (axis_stream_type)
+//         AXIS_BYTE_STREAM :
+//         AXIS_CONTINUOUS_ALIGNED :
+//         AXIS_CONTINUOUS_UNALIGNED :
+
+// endfunction : post_randomize
 
 `endif // AXIS_SEQ_ITEM_SV

@@ -20,6 +20,7 @@ package axis_master_pkg;
     `include "axis_master_single_seq.sv"
     `include "axis_master_packet_seq.sv"
     `include "axis_master_continuous_seq.sv"
+    `include "axis_master_unaligned_seq.sv"
 
 endpackage : axis_master_pkg
 

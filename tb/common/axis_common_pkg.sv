@@ -8,7 +8,9 @@
 package axis_common_pkg;
     import uvm_pkg::*;
     `include "uvm_macros.svh"
-    
+    import axis_cfg_pkg::*;
+    export axis_cfg_pkg::*;   // re-export so importers of this pkg see the enums
+
     `include "axis_seq_item.sv"
 endpackage : axis_common_pkg
 
